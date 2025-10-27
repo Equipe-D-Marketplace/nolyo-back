@@ -6,6 +6,14 @@ const prisma = new PrismaClient();
 
 export const registerUser = async (body) => {
   let { username, email, password, isGuest, role } = body;
+  console.log(
+    "process.env.DATABASE_URL",
+    process.env.DATABASE_URL,
+    "process.env.DIRECT_URL",
+    process.env.DIRECT_URL,
+    process.env.jwtSecret
+  );
+
   if (!username || !email || !password || !role) {
     throw new Error("All fields are required");
   }
@@ -87,11 +95,11 @@ export const editUser = async (body) => {
 
 export const deleteUser = async (query) => {
   const id = parseInt(query.id);
-   const user = await prisma.user.findUnique({ where: { id } });
+  const user = await prisma.user.findUnique({ where: { id } });
   if (!user) {
     throw new Error("User not fond");
   }
   const userDeleted = prisma.user.delete({ where: { id: id } });
-  
-  return userDeleted?true:false;
+
+  return userDeleted ? true : false;
 };
