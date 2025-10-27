@@ -15,7 +15,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Sample route
 app.get("/", (req, res) => {
-  res.send("Hello World!");
+  res.send("Hello World modifier!");
 });
 app.use("/api", authRouter);
 // Start server
