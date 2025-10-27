@@ -42,3 +42,56 @@ export const loginUser = async (body) => {
   );
   return token;
 };
+
+export const getAllUser = async () => {
+  const users = prisma.user.findMany();
+  if (!users) {
+    throw new Error("User not fond");
+  }
+  const sanitizedUser = sanitizeUserData(users);
+
+  return sanitizedUser;
+};
+
+export const getUserId = async (query) => {
+  const id = parseInt(query.id);
+  const user = await prisma.user.findUnique({ where: { id: id } });
+  if (!user) {
+    throw new Error("User not fond");
+  }
+  const sanitizedUser = sanitizeUserData(user);
+
+  return user;
+};
+
+export const editUser = async (body) => {
+  const { ...updatedFields } = body;
+  const id = parseInt(body.id);
+
+  const user = await prisma.user.findUnique({ where: { id } });
+  if (!user) {
+    throw new Error("User not fond");
+  }
+  Object.keys(updatedFields).forEach((key) => {
+    if (updatedFields[key] !== undefined) {
+      user[key] = updatedFields[key];
+    }
+  });
+
+  const useredit = await prisma.user.update({
+    where: { id: body.id },
+    data: user,
+  });
+  return useredit;
+};
+
+export const deleteUser = async (query) => {
+  const id = parseInt(query.id);
+   const user = await prisma.user.findUnique({ where: { id } });
+  if (!user) {
+    throw new Error("User not fond");
+  }
+  const userDeleted = prisma.user.delete({ where: { id: id } });
+  
+  return userDeleted?true:false;
+};
