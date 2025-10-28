@@ -2,6 +2,8 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import authRouter from './src/routers/auth.route.js';
+import categoryRouter from './src/routers/category.route.js';
+import productRouter from './src/routers/product.route.js';
 import panierRouter from './src/routers/panier.route.js';
 
 
@@ -18,9 +20,16 @@ app.use(express.urlencoded({ extended: true }));
 app.get("/", (req, res) => {
   res.send("Hello World modifier!");
 });
-app.use("/api", authRouter);
+
+// Routes API
+app.use("/api/auth", authRouter);
+app.use("/api/categories", categoryRouter);
+app.use("/api/products", productRouter);
 app.use("/api",panierRouter);
+
 // Start server
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
+  console.log(`Categories API: http://localhost:${PORT}/api/categories`);
+  console.log(`Products API: http://localhost:${PORT}/api/products`);
 });
