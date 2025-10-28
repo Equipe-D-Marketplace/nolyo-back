@@ -2,6 +2,7 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import authRouter from './src/routers/auth.route.js';
+import panierRouter from './src/routers/panier.route.js';
 
 
 const app = express();
@@ -18,6 +19,7 @@ app.get("/", (req, res) => {
   res.send("Hello World modifier!");
 });
 app.use("/api", authRouter);
+app.use("/api",panierRouter);
 // Start server
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
