@@ -5,7 +5,8 @@ import {
   updateCategoryService,
   deleteCategoryService,
   categoryExistsService,
-  hasProductsService
+  hasProductsService,
+  addProductToCategoryService
 } from '../services/category.service.js';
 
 // GET /api/categories - Récupérer toutes les catégories
@@ -184,6 +185,77 @@ export const deleteCategory = async (req, res) => {
     res.status(500).json({ 
       success: false,
       error: 'Erreur lors de la suppression de la catégorie',
+      message: error.message
+    });
+  }
+};
+
+// POST /api/categories/:id/products - Ajouter un produit à une catégorie
+export const addProductToCategory = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, description, price, stock, imageUrl, sellerId } = req.body;
+    
+    // Validation de l'ID
+    if (isNaN(parseInt(id))) {
+      return res.status(400).json({
+        success: false,
+        error: 'ID de catégorie invalide'
+      });
+    }
+    
+    // Validation des données requises
+    if (!name || !price || !sellerId) {
+      return res.status(400).json({ 
+        success: false,
+        error: 'Les champs name, price et sellerId sont requis' 
+      });
+    }
+    
+    // Validation du prix
+    if (parseFloat(price) <= 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Le prix doit être supérieur à 0'
+      });
+    }
+    
+    const productData = {
+      name,
+      description,
+      price: parseFloat(price),
+      stock: parseInt(stock) || 0,
+      imageUrl,
+      sellerId: parseInt(sellerId)
+    };
+    
+    const product = await addProductToCategoryService(parseInt(id), productData);
+    
+    res.status(201).json({
+      success: true,
+      data: product,
+      message: 'Produit ajouté à la catégorie avec succès'
+    });
+  } catch (error) {
+    console.error('Erreur lors de l\'ajout du produit à la catégorie:', error);
+    
+    if (error.message === 'Catégorie non trouvée') {
+      return res.status(404).json({
+        success: false,
+        error: 'Catégorie non trouvée'
+      });
+    }
+    
+    if (error.message === 'Vendeur non trouvé') {
+      return res.status(400).json({
+        success: false,
+        error: 'Vendeur non trouvé'
+      });
+    }
+    
+    res.status(500).json({ 
+      success: false,
+      error: 'Erreur lors de l\'ajout du produit à la catégorie',
       message: error.message
     });
   }
