@@ -4,6 +4,7 @@ import cors from 'cors';
 import authRouter from './src/routers/auth.route.js';
 import categoryRouter from './src/routers/category.route.js';
 import productRouter from './src/routers/product.route.js';
+import panierRouter from './src/routers/panier.route.js';
 
 
 const app = express();
@@ -24,6 +25,7 @@ app.get("/", (req, res) => {
 app.use("/api/auth", authRouter);
 app.use("/api/categories", categoryRouter);
 app.use("/api/products", productRouter);
+app.use("/api/cart",panierRouter);
 
 // Start server
 app.listen(PORT, () => {
