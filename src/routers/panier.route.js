@@ -4,11 +4,11 @@ import express from "express";
 import authMiddleware from "../middleware/all.middleware.js";
 const router = express.Router();
 
-router.get("/cart",authMiddleware,fetchPanierByUserId)
-router.post("/cart/add",authMiddleware,createNewPanier)
-router.patch("/cart/update",authMiddleware,updatePanier)
-router.delete("/cart/delete",authMiddleware,deletedPanier)
-router.delete("/cart/clear",authMiddleware,clearePanier)
+router.get("/",authMiddleware,fetchPanierByUserId)
+router.post("/add",authMiddleware,createNewPanier)
+router.patch("/update",authMiddleware,updatePanier)
+router.delete("/delete",authMiddleware,deletedPanier)
+router.delete("/clear",authMiddleware,clearePanier)
 
 
 
