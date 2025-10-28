@@ -3,6 +3,7 @@ import bodyParser from 'body-parser';
 import cors from 'cors';
 import authRouter from './src/routers/auth.route.js';
 import categoryRouter from './src/routers/category.route.js';
+import productRouter from './src/routers/product.route.js';
 
 
 const app = express();
@@ -22,9 +23,11 @@ app.get("/", (req, res) => {
 // Routes API
 app.use("/api/auth", authRouter);
 app.use("/api/categories", categoryRouter);
+app.use("/api/products", productRouter);
 
 // Start server
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
   console.log(`Categories API: http://localhost:${PORT}/api/categories`);
+  console.log(`Products API: http://localhost:${PORT}/api/products`);
 });

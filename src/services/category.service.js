@@ -66,6 +66,55 @@ export const categoryExistsService = async (id) => {
   });
 };
 
+// Ajouter un produit à une catégorie
+export const addProductToCategoryService = async (categoryId, productData) => {
+  return await prisma.$transaction(async (tx) => {
+    // Vérifier que la catégorie existe
+    const category = await tx.category.findUnique({
+      where: { id: categoryId }
+    });
+    
+    if (!category) {
+      throw new Error('Catégorie non trouvée');
+    }
+    
+    // Vérifier que le vendeur existe
+    const seller = await tx.seller.findUnique({
+      where: { id: productData.sellerId }
+    });
+    
+    if (!seller) {
+      throw new Error('Vendeur non trouvé');
+    }
+    
+    // Créer le produit avec la catégorie spécifiée
+    const product = await tx.product.create({
+      data: {
+        ...productData,
+        categoryId: categoryId
+      },
+      include: {
+        category: true,
+        seller: {
+          include: {
+            user: true
+          }
+        }
+      }
+    });
+    
+    // Mettre à jour la catégorie
+    await tx.category.update({
+      where: { id: categoryId },
+      data: {
+        updatedAt: new Date()
+      }
+    });
+    
+    return product;
+  });
+};
+
 // Vérifier si une catégorie a des produits
 export const hasProductsService = async (id) => {
   const category = await prisma.category.findUnique({
