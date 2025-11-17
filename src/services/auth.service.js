@@ -28,7 +28,7 @@ export const registerUser = async (body) => {
     throw new Error("All fields are required");
   }
   if (role == "SELLER" && (!siret || !company)) {
-    throw new Error("Siret and company are required for sellers");
+    throw new Error("Siret and company name are required for sellers");
   }
   const existingUser = await prisma.user.findUnique({ where: { email } });
   if (existingUser) {
@@ -60,6 +60,9 @@ export const registerUser = async (body) => {
             }
           : undefined,
     },
+    include:{
+      seller:true
+    }
   });
   const sanitizedUser = sanitizeUserData(newUser);
 
