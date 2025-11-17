@@ -51,12 +51,12 @@ export const createProductService = async (data) => {
     });
     
     // Mettre à jour la catégorie avec la date du dernier produit ajouté
-    await tx.category.update({
-      where: { id: data.categoryId },
-      data: {
-        updatedAt: new Date()
-      }
-    });
+    // await tx.category.update({
+    //   where: { id: data.categoryId },
+    //   data: {
+    //     updatedAt: new Date()
+    //   }
+    // });
     
     return product;
   });
