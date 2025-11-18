@@ -190,13 +190,13 @@ export const deleteCategory = async (req, res) => {
   }
 };
 
-// POST /api/categories/:id/products - Ajouter un produit à une catégorie
+// POST /api/categories/:id/products - Ajouter un produit existant à une catégorie
 export const addProductToCategory = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { name, description, price, stock, imageUrl, sellerId } = req.body;
+    const { id } = req.params; // ID de la catégorie
+    const { productId } = req.body; // ID du produit existant
     
-    // Validation de l'ID
+    // Validation de l'ID de catégorie
     if (isNaN(parseInt(id))) {
       return res.status(400).json({
         success: false,
@@ -204,34 +204,17 @@ export const addProductToCategory = async (req, res) => {
       });
     }
     
-    // Validation des données requises
-    if (!name || !price || !sellerId) {
+    // Validation de l'ID de produit
+    if (!productId || isNaN(parseInt(productId))) {
       return res.status(400).json({ 
         success: false,
-        error: 'Les champs name, price et sellerId sont requis' 
+        error: 'ID de produit requis et doit être un nombre valide' 
       });
     }
     
-    // Validation du prix
-    if (parseFloat(price) <= 0) {
-      return res.status(400).json({
-        success: false,
-        error: 'Le prix doit être supérieur à 0'
-      });
-    }
+    const product = await addProductToCategoryService(parseInt(id), parseInt(productId));
     
-    const productData = {
-      name,
-      description,
-      price: parseFloat(price),
-      stock: parseInt(stock) || 0,
-      imageUrl,
-      sellerId: parseInt(sellerId)
-    };
-    
-    const product = await addProductToCategoryService(parseInt(id), productData);
-    
-    res.status(201).json({
+    res.status(200).json({
       success: true,
       data: product,
       message: 'Produit ajouté à la catégorie avec succès'
@@ -246,10 +229,10 @@ export const addProductToCategory = async (req, res) => {
       });
     }
     
-    if (error.message === 'Vendeur non trouvé') {
-      return res.status(400).json({
+    if (error.message === 'Produit non trouvé') {
+      return res.status(404).json({
         success: false,
-        error: 'Vendeur non trouvé'
+        error: 'Produit non trouvé'
       });
     }
     
