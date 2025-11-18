@@ -3,13 +3,13 @@ import {
   deleteAddressService,
   getAddressByUserIdService,
   updateAddressService,
-} from "../services/address.service";
+} from "../services/address.service.js";
 import { StatusCodes } from "http-status-codes";
 
 // Create address
 export const createAddressController = async (req, res) => {
   try {
-    const user = req.user;
+    const user = req.user;    
     const address = await createAddressService(user, req.body);
 
     return res.status(StatusCodes.CREATED).json({
@@ -70,7 +70,9 @@ export const getAddressByUserIdController = async (req, res) => {
 export const deleteAddressController = async (req, res) => {
   try {
     const { id } = req.query;
-    const deletedAddress = await deleteAddressService(Number(id));
+    const user= req.user
+    
+    const deletedAddress = await deleteAddressService(user,Number(id));
 
     return res.status(StatusCodes.OK).json({
       success: true,
@@ -84,12 +86,4 @@ export const deleteAddressController = async (req, res) => {
       error: error.message,
     });
   }
-};
-
-// Export module
-module.exports = {
-  createAddressController,
-  updateAddressController,
-  getAddressByUserIdController,
-  deleteAddressController,
 };
