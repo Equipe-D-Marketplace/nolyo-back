@@ -1,14 +1,11 @@
-const { PrismaClient } = require("@prisma/client");
+import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
-/* -------------------------------------------------------
-   CREATE ADDRESS
-------------------------------------------------------- */
 export const createAddressService = async (user, body) => {
   const { street, city, postalCode, country } = body;
 
   const client = await prisma.client.findUnique({
-    where: { userId: user.id },
+    where: { userId: user.userId },
   });
 
   if (!client) {
@@ -30,16 +27,9 @@ export const createAddressService = async (user, body) => {
     },
   });
 
-  return {
-    success: true,
-    message: "Adresse créée avec succès",
-    data: address,
-  };
+  return address;
 };
 
-/* -------------------------------------------------------
-   UPDATE ADDRESS
-------------------------------------------------------- */
 export const updateAddressService = async (user, body) => {
   const { id, ...fieldsToUpdate } = body;
 
@@ -48,7 +38,7 @@ export const updateAddressService = async (user, body) => {
   }
 
   const client = await prisma.client.findUnique({
-    where: { userId: user.id },
+    where: { userId: user.userId },
   });
 
   if (!client) {
@@ -69,19 +59,12 @@ export const updateAddressService = async (user, body) => {
     data: fieldsToUpdate,
   });
 
-  return {
-    success: true,
-    message: "Adresse mise à jour avec succès",
-    data: updatedAddress,
-  };
+  return updatedAddress;
 };
 
-/* -------------------------------------------------------
-   GET ADDRESS BY USER ID
-------------------------------------------------------- */
 export const getAddressByUserIdService = async (user) => {
   const client = await prisma.client.findUnique({
-    where: { userId: user.id },
+    where: { userId: user.userId },
   });
 
   if (!client) {
@@ -92,23 +75,18 @@ export const getAddressByUserIdService = async (user) => {
     where: { clientId: client.id },
   });
 
-  return {
-    success: true,
-    message: "Adresses récupérées avec succès",
-    data: addresses,
-  };
+  return addresses;
 };
 
-/* -------------------------------------------------------
-   DELETE ADDRESS
-------------------------------------------------------- */
 export const deleteAddressService = async (user, addressId) => {
+  console.log("ididid", user);
+
   if (!addressId) {
     throw new Error("Address ID is required");
   }
 
   const client = await prisma.client.findUnique({
-    where: { userId: user.id },
+    where: { userId: user.userId },
   });
 
   if (!client) {
@@ -127,16 +105,5 @@ export const deleteAddressService = async (user, addressId) => {
     where: { id: addressId },
   });
 
-  return {
-    success: true,
-    message: "Adresse supprimée avec succès",
-    data: deleted,
-  };
-};
-
-module.exports = {
-  createAddressService,
-  updateAddressService,
-  getAddressByUserIdService,
-  deleteAddressService,
+  return deleted;
 };
