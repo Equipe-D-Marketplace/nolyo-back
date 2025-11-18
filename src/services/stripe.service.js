@@ -1,11 +1,11 @@
-import Stripe from 'stripe';
-import dotenv from 'dotenv';
+import Stripe from "stripe";
+import dotenv from "dotenv";
 
 dotenv.config();
 
 // Initialiser Stripe avec la clé secrète
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: '2024-12-18.acacia',
+  apiVersion: "2024-12-18.acacia",
 });
 
 /**
@@ -35,11 +35,11 @@ export const createStripeProduct = async (productData) => {
     // Créer le prix associé au produit
     // Stripe utilise des centimes, donc on multiplie par 100
     const priceInCents = Math.round(productData.price * 100);
-    
+
     const stripePrice = await stripe.prices.create({
       product: stripeProduct.id,
       unit_amount: priceInCents,
-      currency: 'eur', // Vous pouvez le rendre configurable
+      currency: "eur", // Vous pouvez le rendre configurable
     });
 
     return {
@@ -49,7 +49,7 @@ export const createStripeProduct = async (productData) => {
       price: stripePrice,
     };
   } catch (error) {
-    console.error('Erreur lors de la création du produit Stripe:', error);
+    console.error("Erreur lors de la création du produit Stripe:", error);
     throw new Error(`Erreur Stripe: ${error.message}`);
   }
 };
@@ -63,7 +63,7 @@ export const createStripeProduct = async (productData) => {
 export const updateStripeProduct = async (stripeProductId, updateData) => {
   try {
     const updateFields = {};
-    
+
     if (updateData.name) updateFields.name = updateData.name;
     if (updateData.description !== undefined) {
       updateFields.description = updateData.description || null;
@@ -72,7 +72,10 @@ export const updateStripeProduct = async (stripeProductId, updateData) => {
       updateFields.images = [updateData.imageUrl];
     }
 
-    const updatedProduct = await stripe.products.update(stripeProductId, updateFields);
+    const updatedProduct = await stripe.products.update(
+      stripeProductId,
+      updateFields
+    );
 
     // Si le prix a changé, créer un nouveau prix
     if (updateData.price) {
@@ -80,13 +83,13 @@ export const updateStripeProduct = async (stripeProductId, updateData) => {
       await stripe.prices.create({
         product: stripeProductId,
         unit_amount: priceInCents,
-        currency: 'eur',
+        currency: "eur",
       });
     }
 
     return updatedProduct;
   } catch (error) {
-    console.error('Erreur lors de la mise à jour du produit Stripe:', error);
+    console.error("Erreur lors de la mise à jour du produit Stripe:", error);
     throw new Error(`Erreur Stripe: ${error.message}`);
   }
 };
@@ -104,7 +107,7 @@ export const deleteStripeProduct = async (stripeProductId) => {
     });
     return deletedProduct;
   } catch (error) {
-    console.error('Erreur lors de la suppression du produit Stripe:', error);
+    console.error("Erreur lors de la suppression du produit Stripe:", error);
     throw new Error(`Erreur Stripe: ${error.message}`);
   }
 };
@@ -119,7 +122,7 @@ export const getStripeProduct = async (stripeProductId) => {
     const product = await stripe.products.retrieve(stripeProductId);
     return product;
   } catch (error) {
-    console.error('Erreur lors de la récupération du produit Stripe:', error);
+    console.error("Erreur lors de la récupération du produit Stripe:", error);
     throw new Error(`Erreur Stripe: ${error.message}`);
   }
 };
@@ -136,9 +139,43 @@ export const getStripeProductPrices = async (stripeProductId) => {
     });
     return prices.data;
   } catch (error) {
-    console.error('Erreur lors de la récupération des prix Stripe:', error);
+    console.error("Erreur lors de la récupération des prix Stripe:", error);
     throw new Error(`Erreur Stripe: ${error.message}`);
   }
+};
+export const createPaymentSection = async ({ montant, stripePriceId, }) => {
+  if (!stripePriceId) {
+    const error = new Error("Veuillez fournir les informations requises");
+    error.statusCode = StatusCodes.BAD_REQUEST;
+    throw error;
+  }
+  const session = await stripe.checkout.sessions.create({
+    payment_method_types: ["card"],
+    mode: "payment",
+    line_items: [
+      {
+        price_data: {
+          currency: "eur",
+          product_data: {
+            name: "Finaliser le payement de votre product",
+          },
+          unit_amount: montant,
+        },
+        quantity: 1,
+      },
+    ],
+    metadata: {
+      stripePriceId: stripePriceId,
+    },
+    success_url:
+      "http://localhost:3000/creer-un-evenement?payment=success&&session_id={CHECKOUT_SESSION_ID}",
+    cancel_url: "http://localhost:3000/creer-un-evenement?payment=cancel",
+    // success_url:
+    //   "https://lookarounweb-web-production.up.railway.app/creat-event?payment=success&&session_id={CHECKOUT_SESSION_ID}",
+    // cancel_url: "https://lookarounweb-web-production.up.railway.app/creat-event?payment=cancel",
+  });
+
+  return session.url;
 };
 
 export default stripe;
