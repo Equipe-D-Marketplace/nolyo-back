@@ -66,8 +66,8 @@ export const categoryExistsService = async (id) => {
   });
 };
 
-// Ajouter un produit à une catégorie
-export const addProductToCategoryService = async (categoryId, productData) => {
+// Ajouter un produit existant à une catégorie (changer sa catégorie)
+export const addProductToCategoryService = async (categoryId, productId) => {
   return await prisma.$transaction(async (tx) => {
     // Vérifier que la catégorie existe
     const category = await tx.category.findUnique({
@@ -78,19 +78,19 @@ export const addProductToCategoryService = async (categoryId, productData) => {
       throw new Error('Catégorie non trouvée');
     }
     
-    // Vérifier que le vendeur existe
-    const seller = await tx.seller.findUnique({
-      where: { id: productData.sellerId }
+    // Vérifier que le produit existe
+    const existingProduct = await tx.product.findUnique({
+      where: { id: productId }
     });
     
-    if (!seller) {
-      throw new Error('Vendeur non trouvé');
+    if (!existingProduct) {
+      throw new Error('Produit non trouvé');
     }
     
-    // Créer le produit avec la catégorie spécifiée
-    const product = await tx.product.create({
+    // Mettre à jour la catégorie du produit
+    const updatedProduct = await tx.product.update({
+      where: { id: productId },
       data: {
-        ...productData,
         categoryId: categoryId
       },
       include: {
@@ -103,7 +103,7 @@ export const addProductToCategoryService = async (categoryId, productData) => {
       }
     });
     
-    // Mettre à jour la catégorie
+    // Mettre à jour la catégorie avec la date de mise à jour
     await tx.category.update({
       where: { id: categoryId },
       data: {
@@ -111,7 +111,7 @@ export const addProductToCategoryService = async (categoryId, productData) => {
       }
     });
     
-    return product;
+    return updatedProduct;
   });
 };
 
