@@ -12,8 +12,8 @@ import {
 const router = express.Router();
 
 // Routes CRUD pour les catégories
-router.get('/', authMiddleware, getAllCategories);           // GET /api/categories
-router.get('/:id', authMiddleware, getCategoryById);        // GET /api/categories/:id
+router.get('/', getAllCategories);           // GET /api/categories
+router.get('/:id', getCategoryById);        // GET /api/categories/:id
 router.post('/', authMiddleware, createCategory);          // POST /api/categories
 router.put('/:id', authMiddleware, updateCategory);        // PUT /api/categories/:id
 router.delete('/:id', authMiddleware, deleteCategory);     // DELETE /api/categories/:id

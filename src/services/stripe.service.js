@@ -65,7 +65,6 @@ export const createStripeProduct = async (productData) => {
 export const updateStripeProduct = async (stripeProductId, updateData) => {
   try {
     const updateFields = {};
-
     if (updateData.name) updateFields.name = updateData.name;
     if (updateData.description !== undefined) {
       updateFields.description = updateData.description || null;
