@@ -6,13 +6,15 @@ import {
   getOrderById,
   getOrderBySellerId,
 } from "../services/order.service.js";
+import { createPaymentSession } from "../services/stripe.service.js";
 
 export const createOrderController = async (req, res) => {
   try {
     const body = req.body;
     const user = req.user;
+    console.log("bodybody", body);
 
-    const order = await createOrderService(user, body);
+    const order = await createOrderService(body,user);
 
     return res.status(StatusCodes.CREATED).json({
       success: true,
@@ -31,7 +33,7 @@ export const getOrderByIdController = async (req, res) => {
   try {
     const { id } = req.query;
 
-    const order = await getOrderById(id);
+    const order = await getOrderById(parseInt(id));
 
     return res.status(StatusCodes.OK).json({
       success: true,
@@ -48,9 +50,9 @@ export const getOrderByIdController = async (req, res) => {
 
 export const getOrderByClientIdController = async (req, res) => {
   try {
-    const { id } = req.query;
-
-    const orders = await getOrderByClientId(id);
+    const client = req.user.userId;
+    
+    const orders = await getOrderByClientId(client);
 
     return res.status(StatusCodes.OK).json({
       success: true,
@@ -67,9 +69,9 @@ export const getOrderByClientIdController = async (req, res) => {
 
 export const getOrderBySellerIdController = async (req, res) => {
   try {
-    const { id } = req.query;
+    const client = req.user.userId;
 
-    const orders = await getOrderBySellerId(id);
+    const orders = await getOrderBySellerId(client);
 
     return res.status(StatusCodes.OK).json({
       success: true,
@@ -102,4 +104,15 @@ export const editStatusOrderController = async (req, res) => {
       message: error.message,
     });
   }
+};
+export const createPaymentSessionContrller = async(req, res) => {
+  const { products } = req.body;
+  const checkout = await createPaymentSession({products});
+  console.log("checkout",checkout);
+  
+  return res.status(StatusCodes.OK).json({
+    success: true,
+    message: "session",
+    data: checkout,
+  });
 };
