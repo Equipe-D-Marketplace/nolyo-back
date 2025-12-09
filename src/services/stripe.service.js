@@ -253,15 +253,20 @@ export const createPaymentSession = async ({ products }) => {
 
     // ✅ Création de la session Stripe
     const session = await stripe.checkout.sessions.create({
-      payment_method_types: ["card"],
-      mode: "payment",
-      line_items: lineItems,
-      metadata: {
-        products: JSON.stringify(metadataProducts),
-      },
-      success_url: `${process.env.FRONTEND_URL}/paiement?status=success&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.FRONTEND_URL}/paiement?status=cancel`,
-    });
+  mode: "payment",
+  line_items: lineItems,
+  metadata: {
+    products: JSON.stringify(metadataProducts),
+  },
+  success_url: `${process.env.FRONTEND_URL}/paiement?status=success&session_id={CHECKOUT_SESSION_ID}`,
+  cancel_url: `${process.env.FRONTEND_URL}/paiement?status=cancel`,
+  payment_method_options: {
+    card: {
+      request_three_d_secure: "automatic"
+    }
+  }
+});
+
 
     return session.url;
   } catch (error) {

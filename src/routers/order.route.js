@@ -7,7 +7,9 @@ import {
   editStatusOrderController,
   getOrderByClientIdController,
   getOrderByIdController,
-  getOrderBySellerIdController
+  getOrderBySellerIdController,
+  webhook
+  
 } from "../controllers/order.controller.js";
 
 router.post("/add", authMiddleware, createOrderController);
@@ -16,5 +18,6 @@ router.get("/orderbyseller", authMiddleware, getOrderBySellerIdController);
 router.get("/orderbyid", authMiddleware, getOrderByIdController);
 router.patch("/edit", authMiddleware, editStatusOrderController);
 router.post('/session',authMiddleware,createPaymentSessionContrller)
+router.post('/webhooks',webhook)
 
 export default router;

@@ -116,3 +116,39 @@ export const createPaymentSessionContrller = async(req, res) => {
     data: checkout,
   });
 };
+
+export const webhook = async (req, res) => {
+  const sig = req.headers["stripe-signature"];
+  const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET; // Mettez votre secret ici
+
+  let event;
+
+  try {
+    event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
+  } catch (err) {
+    console.error("Erreur webhook :", err.message);
+    return res
+      .status(StatusCodes.BAD_REQUEST)
+      .send(`Webhook Error: ${err.message}`);
+  }
+
+  // 📌 Gérer les événements reçus
+  switch (event.type) {
+    case "payment_intent.succeeded":
+      console.log("💰 Paiement réussi :", event.data.object.id);
+      break;
+
+    case "invoice.payment_succeeded":
+      console.log("🔄 Abonnement renouvelé :", event.data.object.subscription);
+      break;
+
+    case "checkout.session.completed":
+      console.log("✅ Paiement via Checkout complété :", event.data.object.id);
+      break;
+
+    default:
+      console.log(`⚠️ Événement non traité : ${event.type}`);
+  }
+
+  res.json({ received: true });
+};
