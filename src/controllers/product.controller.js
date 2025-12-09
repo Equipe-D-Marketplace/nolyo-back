@@ -8,6 +8,43 @@ import {
   sellerExistsService,
   categoryExistsService
 } from '../services/product.service.js';
+import { v2 as cloudinary } from 'cloudinary';
+
+// Fonction utilitaire pour extraire le public_id d'une URL Cloudinary
+const extractPublicIdFromUrl = (url) => {
+  if (!url) return null;
+  
+  try {
+    // Les URLs Cloudinary ont le format: 
+    // https://res.cloudinary.com/{cloud_name}/image/upload/v{version}/{public_id}.{format}
+    // ou: https://res.cloudinary.com/{cloud_name}/image/upload/{public_id}.{format}
+    const urlParts = url.split('/');
+    const uploadIndex = urlParts.findIndex(part => part === 'upload');
+    
+    if (uploadIndex === -1) return null;
+    
+    // Prendre la partie après 'upload'
+    const afterUpload = urlParts.slice(uploadIndex + 1);
+    
+    // Filtrer les versions (format: v1234567890)
+    const partsWithoutVersion = afterUpload.filter(part => !part.match(/^v\d+$/));
+    
+    // Le dernier élément contient le nom de fichier avec extension
+    const filename = partsWithoutVersion[partsWithoutVersion.length - 1];
+    // Enlever l'extension
+    const publicIdWithoutExt = filename.split('.')[0];
+    
+    // Reconstruire le public_id complet avec le dossier (tous les éléments sauf le dernier)
+    const folderParts = partsWithoutVersion.slice(0, -1);
+    if (folderParts.length > 0) {
+      return `${folderParts.join('/')}/${publicIdWithoutExt}`;
+    }
+    return publicIdWithoutExt;
+  } catch (error) {
+    console.error('Erreur lors de l\'extraction du public_id:', error);
+    return null;
+  }
+};
 
 // GET /api/products - Récupérer tous les produits
 export const getAllProducts = async (req, res) => {
@@ -67,7 +104,7 @@ export const getProductById = async (req, res) => {
 // POST /api/products - Créer un nouveau produit
 export const createProduct = async (req, res) => {
   try {
-    const { name, description, price, stock, imageUrl, sellerId, categoryId } = req.body;
+    const { name, description, price, stock, sellerId, categoryId } = req.body;
     
     // Validation des données requises
     if (!name || !price || !sellerId || !categoryId) {
@@ -103,6 +140,14 @@ export const createProduct = async (req, res) => {
       });
     }
     
+    // Gérer l'image uploadée
+    let imageUrl = null;
+    if (req.file) {
+      // req.file.path contient l'URL complète de l'image sur Cloudinary
+      // req.file.public_id peut aussi être disponible selon la version de multer-storage-cloudinary
+      imageUrl = req.file.path || req.file.url;
+    }
+    
     const product = await createProductService({
       name,
       description,
@@ -132,7 +177,7 @@ export const createProduct = async (req, res) => {
 export const updateProduct = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, description, price, stock, imageUrl, categoryId } = req.body;
+    const { name, description, price, stock, categoryId } = req.body;
     
     // Validation de l'ID
     if (isNaN(parseInt(id))) {
@@ -176,8 +221,25 @@ export const updateProduct = async (req, res) => {
     if (description !== undefined) updateData.description = description;
     if (price !== undefined) updateData.price = parseFloat(price);
     if (stock !== undefined) updateData.stock = parseInt(stock);
-    if (imageUrl !== undefined) updateData.imageUrl = imageUrl;
     if (categoryId !== undefined) updateData.categoryId = parseInt(categoryId);
+    
+    // Gérer l'image uploadée
+    if (req.file) {
+      // Supprimer l'ancienne image de Cloudinary si elle existe
+      if (existingProduct.imageUrl) {
+        try {
+          const publicId = extractPublicIdFromUrl(existingProduct.imageUrl);
+          if (publicId) {
+            await cloudinary.uploader.destroy(publicId);
+          }
+        } catch (error) {
+          console.error('Erreur lors de la suppression de l\'ancienne image:', error);
+          // Continuer même si la suppression échoue
+        }
+      }
+      // req.file.path contient l'URL complète de la nouvelle image sur Cloudinary
+      updateData.imageUrl = req.file.path || req.file.url;
+    }
     
     const product = await updateProductService(parseInt(id), updateData);
     
@@ -216,6 +278,19 @@ export const deleteProduct = async (req, res) => {
         success: false,
         error: 'Produit non trouvé' 
       });
+    }
+    
+    // Supprimer l'image de Cloudinary si elle existe
+    if (existingProduct.imageUrl) {
+      try {
+        const publicId = extractPublicIdFromUrl(existingProduct.imageUrl);
+        if (publicId) {
+          await cloudinary.uploader.destroy(publicId);
+        }
+      } catch (error) {
+        console.error('Erreur lors de la suppression de l\'image:', error);
+        // Continuer même si la suppression échoue
+      }
     }
     
     await deleteProductService(parseInt(id));
