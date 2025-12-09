@@ -18,6 +18,6 @@ router.get("/orderbyseller", authMiddleware, getOrderBySellerIdController);
 router.get("/orderbyid", authMiddleware, getOrderByIdController);
 router.patch("/edit", authMiddleware, editStatusOrderController);
 router.post('/session',authMiddleware,createPaymentSessionContrller)
-router.post('/payment/webhooks',webhook)
+router.post('/webhooks',webhook)
 
 export default router;
