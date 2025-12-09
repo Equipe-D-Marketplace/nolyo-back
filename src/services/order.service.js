@@ -4,10 +4,15 @@ const prisma = new PrismaClient();
 
 export const createOrderService = async (body, user) => {
   try {
-    const { addressId, status, isGuest, sessionId } = body;
+    const { addressId, sessionId } = body;
+    const status = "PAID";
+    const isGuest = true;
     const clientId = user.userId;
     console.log("lokoklok", clientId, addressId);
     const sessionCheck = await checkoutSuccess(sessionId);
+
+    console.log("sessionCheck", sessionCheck.metadata.panierId);
+    const panierId = parseInt(sessionCheck.metadata.panierId);
 
     const items = JSON.parse(sessionCheck.metadata.products);
 
@@ -78,6 +83,19 @@ export const createOrderService = async (body, user) => {
         },
       },
     });
+    if (order) {
+      const cartitme = await prisma.cart.findFirst({
+        where: { id: panierId },
+      });
+      if (cartitme) {
+        const deletePanier = await prisma.cart.delete({
+          where: {
+            id: panierId,
+          },
+        });
+        console.log("deletePanier", deletePanier);
+      }
+    }
 
     return order;
   } catch (error) {

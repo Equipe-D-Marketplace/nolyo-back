@@ -106,8 +106,8 @@ export const editStatusOrderController = async (req, res) => {
   }
 };
 export const createPaymentSessionContrller = async(req, res) => {
-  const { products } = req.body;
-  const checkout = await createPaymentSession({products});
+  const { products,panierId } = req.body;
+  const checkout = await createPaymentSession({products,panierId});
   console.log("checkout",checkout);
   
   return res.status(StatusCodes.OK).json({
