@@ -260,8 +260,8 @@ export const createPaymentSession = async ({ products,panierId }) => {
     panierId:panierId,
     products: JSON.stringify(metadataProducts),
   },
-  success_url: `${process.env.FRONTEND_URL}/paiement?status=success&session_id={CHECKOUT_SESSION_ID}`,
-  cancel_url: `${process.env.FRONTEND_URL_CANCEL}/paiement?status=cancel`,
+  success_url: `${process.env.FRONTEND_URL}?status=success&session_id={CHECKOUT_SESSION_ID}`,
+  cancel_url: `${process.env.FRONTEND_URL_CANCEL}?status=cancel`,
   payment_method_options: {
     card: {
       request_three_d_secure: "automatic"
