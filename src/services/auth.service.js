@@ -5,7 +5,17 @@ import jwt from "jsonwebtoken";
 const prisma = new PrismaClient();
 
 export const registerUser = async (body) => {
-  let { username, email, password, isGuest, role } = body;
+  let {
+    username,
+    email,
+    password,
+    isGuest,
+    role,
+    siret,
+    company,
+    address,
+    phone,
+  } = body;
   console.log(
     "process.env.DATABASE_URL",
     process.env.DATABASE_URL,
@@ -17,13 +27,42 @@ export const registerUser = async (body) => {
   if (!username || !email || !password || !role) {
     throw new Error("All fields are required");
   }
+  if (role == "SELLER" && (!siret || !company)) {
+    throw new Error("Siret and company name are required for sellers");
+  }
   const existingUser = await prisma.user.findUnique({ where: { email } });
   if (existingUser) {
     throw new Error("User already exists");
   }
   password = await hashPassword(password);
   const newUser = await prisma.user.create({
-    data: { username, email, password, isGuest, role },
+    data: {
+      username,
+      email,
+      password,
+      isGuest,
+      role,
+      seller:
+        role === "SELLER"
+          ? {
+              create: {
+                siret: siret,
+                company: company,
+              },
+            }
+          : undefined,
+      client:
+        role === "CLIENT"
+          ? {
+              create: {
+                phone: phone || null,
+              },
+            }
+          : undefined,
+    },
+    include: {
+      seller: true,
+    },
   });
   const sanitizedUser = sanitizeUserData(newUser);
 
@@ -48,7 +87,10 @@ export const loginUser = async (body) => {
     process.env.jwtSecret,
     { expiresIn: "7d" }
   );
-  return token;
+  return {
+    user: sanitizeUserData(user),
+    token,
+  };
 };
 
 export const getAllUser = async () => {

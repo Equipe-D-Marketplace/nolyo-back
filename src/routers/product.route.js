@@ -36,9 +36,9 @@ const handleMulterError = (err, req, res, next) => {
 };
 
 // Routes CRUD pour les produits
-router.get('/', authMiddleware, getAllProducts);           // GET /api/products
-router.get('/:id', authMiddleware, getProductById);        // GET /api/products/:id
-router.post('/', uploadProductImage, handleMulterError, createProduct);          // POST /api/products
+router.get('/', getAllProducts);           // GET /api/products
+router.get('/:id', getProductById);        // GET /api/products/:id
+router.post('/', authMiddleware, uploadProductImage, handleMulterError, createProduct);          // POST /api/products
 router.put('/:id', authMiddleware, uploadProductImage, handleMulterError, updateProduct);        // PUT /api/products/:id
 router.delete('/:id', authMiddleware, deleteProduct);     // DELETE /api/products/:id
 

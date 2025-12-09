@@ -1,11 +1,13 @@
 import 'dotenv/config';
-import express from 'express';
-import bodyParser from 'body-parser';
-import cors from 'cors';
-import authRouter from './src/routers/auth.route.js';
-import categoryRouter from './src/routers/category.route.js';
-import productRouter from './src/routers/product.route.js';
-
+import express from "express";
+import bodyParser from "body-parser";
+import cors from "cors";
+import authRouter from "./src/routers/auth.route.js";
+import categoryRouter from "./src/routers/category.route.js";
+import productRouter from "./src/routers/product.route.js";
+import panierRouter from "./src/routers/panier.route.js";
+import addressRouter from "./src/routers/address.route.js";
+import orderRouter from "./src/routers/order.route.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -25,6 +27,10 @@ app.get("/", (req, res) => {
 app.use("/api/auth", authRouter);
 app.use("/api/categories", categoryRouter);
 app.use("/api/products", productRouter);
+app.use("/api/cart", panierRouter);
+app.use("/api/address", addressRouter);
+app.use("/api/order", orderRouter);
+
 
 // Start server
 app.listen(PORT, () => {
