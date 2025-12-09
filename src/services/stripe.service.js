@@ -196,7 +196,7 @@ export const getStripeProductPrices = async (stripeProductId) => {
 //   }
 // };
 
-export const createPaymentSession = async ({ products }) => {
+export const createPaymentSession = async ({ products,panierId }) => {
   try {
     if (!products || products.length === 0) {
       const error = new Error("Veuillez fournir au moins un produit");
@@ -248,6 +248,7 @@ export const createPaymentSession = async ({ products }) => {
         productId: dbProduct.id,
         quantity: frontProduct.quantity,
         unitPrice: dbProduct.price,
+        panierId:panierId
       });
     }
 
@@ -256,10 +257,11 @@ export const createPaymentSession = async ({ products }) => {
   mode: "payment",
   line_items: lineItems,
   metadata: {
+    panierId:panierId,
     products: JSON.stringify(metadataProducts),
   },
   success_url: `${process.env.FRONTEND_URL}/paiement?status=success&session_id={CHECKOUT_SESSION_ID}`,
-  cancel_url: `${process.env.FRONTEND_URL}/paiement?status=cancel`,
+  cancel_url: `${process.env.FRONTEND_URL_CANCEL}/paiement?status=cancel`,
   payment_method_options: {
     card: {
       request_three_d_secure: "automatic"
