@@ -60,9 +60,9 @@ export const registerUser = async (body) => {
             }
           : undefined,
     },
-    include:{
-      seller:true
-    }
+    include: {
+      seller: true,
+    },
   });
   const sanitizedUser = sanitizeUserData(newUser);
 
@@ -87,7 +87,10 @@ export const loginUser = async (body) => {
     process.env.jwtSecret,
     { expiresIn: "7d" }
   );
-  return token;
+  return {
+    user: sanitizeUserData(user),
+    token,
+  };
 };
 
 export const getAllUser = async () => {
