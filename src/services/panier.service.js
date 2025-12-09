@@ -2,17 +2,19 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-
-
 export const getPanierByUserId = async (userId) => {
   try {
     // 1. Vérifier que le client existe
     const client = await prisma.client.findUnique({
       where: { userId },
-     include: {
+      include: {
         carts: {
           include: {
-            items: true,
+            items: {
+              include: {
+                product: true,
+              },
+            },
           },
         },
       },
@@ -31,7 +33,6 @@ export const getPanierByUserId = async (userId) => {
       success: true,
       panier: client.carts ?? [],
     };
-
   } catch (error) {
     return {
       success: false,
@@ -117,4 +118,3 @@ export const clearPanier = async (panierId) => {
     deletedCount: clearedItems.count,
   };
 };
-
